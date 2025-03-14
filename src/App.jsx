@@ -166,7 +166,7 @@ function App() {
               )}
               <CartButton onClick={() => setIsCartOpen(true)} itemCount={totalItems} />
               <WhatsAppButton cartItems={cartItems} />
-              <AdminLink />
+              {/*<AdminLink />*/}
               {isCartOpen && (
                 <CartModal
                   cartItems={cartItems}

@@ -19,6 +19,10 @@ export default {
           '0%, 100%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(1.1)' }
         },
+        pulseGrow: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.1)' },
+        },
         'bounce-x': {
           '0%, 100%': { transform: 'translateX(0)' },
           '50%': { transform: 'translateX(25%)' },
@@ -26,6 +30,7 @@ export default {
       },
       animation: {
         'bounce-x': 'bounce-x 1s infinite',
+        'pulseGrow': 'pulseGrow 1.5s infinite',
       }
     },
   },
