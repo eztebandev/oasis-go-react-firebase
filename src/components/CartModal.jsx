@@ -41,7 +41,7 @@ function CartModal({ cartItems, onClose, onIncrease, onDecrease, onSendWhatsApp 
                     <img src={item.imageUrl} alt={item.name} className="h-16 w-16 object-cover rounded-md mr-4" />
                     <div>
                       <h3 className="text-gray-800 font-medium">{item.name}</h3>
-                      <p className="text-gray-600 text-sm">${item.price.toFixed(2)}</p>
+                      <p className="text-gray-600 text-sm">s/. {item.price.toFixed(2)}</p>
                     </div>
                   </div>
                   <div className="flex items-center">
