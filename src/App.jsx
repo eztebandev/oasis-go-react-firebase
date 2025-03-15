@@ -12,38 +12,71 @@ import CategoryList from './components/CategoryList';
 import UploadProducts from './components/UploadProducts';
 import BulkUpload from './components/BulkUpload';
 import AdminLink from './components/AdminLink';
+import BulkUploadButton from './components/BulkUploadButton';
+import AdminStoreButton from './components/AdminStoreButton';
+import AdminProductButton from './components/AdminProductButton';
+import StoreManagement from './components/stores/StoreManagement';
+import ProductManagement from './components/products/ProductManagement';
 import BusinessHours from './components/BusinessHours';
+import ServiceLocations from './components/ServiceLocations';
 
 function App() {
   const [products, setProducts] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [cartItems, setCartItems] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [stores, setStores] = useState([]); 
+  const [activeStoresMap, setActiveStoresMap] = useState({});
+
+  // Calcular el total de items en el carrito
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
+    // Cargar tiendas y productos desde Firestore
     const fetchData = async () => {
+      setLoading(true);
       try {
-        // Obtener productos
-        const productsSnapshot = await getDocs(collection(db, 'products'));
-        const productsData = productsSnapshot.docs
-          .map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            quantity: 1 // Inicializa la cantidad
-          }))
-          .filter(product => product.active);
-        setProducts(productsData);
-        
-        // Obtener categorías
-        const categoriesSnapshot = await getDocs(collection(db, 'productsCategory'));
-        const categoriesData = categoriesSnapshot.docs.map(doc => ({
+        // Primero, cargar tiendas y crear un mapa de tiendas activas
+        const storesSnapshot = await getDocs(collection(db, 'stores'));
+        const storesList = storesSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        setCategories(categoriesData);
+        setStores(storesList);
+        
+        // Crear un mapa para verificar rápidamente el estado de las tiendas
+        const storesMap = {};
+        storesList.forEach(store => {
+          storesMap[store.id] = store.state;
+        });
+        setActiveStoresMap(storesMap);
+        
+        // Luego cargar productos
+        const productsSnapshot = await getDocs(collection(db, 'products'));
+        const productsList = productsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        // Filtrar productos por tiendas activas
+        const activeProducts = productsList.filter(product => 
+          product.active && storesMap[product.storeId]
+        );
+        
+        setProducts(activeProducts);
+        setFilteredProducts(activeProducts);
+        
+        // Cargar categorías
+        const categoriesSnapshot = await getDocs(collection(db, 'productsCategory'));
+        const categoriesList = categoriesSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setCategories(categoriesList);
       } catch (error) {
         console.error("Error al cargar datos:", error);
       } finally {
@@ -53,6 +86,30 @@ function App() {
 
     fetchData();
   }, []);
+
+  // Filtrar productos cuando cambie la categoría o el término de búsqueda
+  useEffect(() => {
+    let result = products;
+    
+    // Filtrar por tiendas activas
+    result = result.filter(product => activeStoresMap[product.storeId]);
+    
+    // Filtrar por categoría si hay una seleccionada
+    if (selectedCategory) {
+      result = result.filter(product => product.productsCategoryId === selectedCategory);
+    }
+    
+    // Filtrar por término de búsqueda
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(product =>
+        product.name.toLowerCase().includes(term) ||
+        (product.description && product.description.toLowerCase().includes(term))
+      );
+    }
+    
+    setFilteredProducts(result);
+  }, [products, selectedCategory, searchTerm, activeStoresMap]);
 
   const handleAddToCart = (product) => {
     const existingProduct = cartItems.find(item => item.id === product.id);
@@ -114,25 +171,10 @@ function App() {
     }
   };
 
-  const filteredProducts = products.filter(product => {
-    // Filtrar por término de búsqueda
-    const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Filtrar por categoría si hay una seleccionada
-    const matchesCategory = selectedCategory 
-      ? product.productsCategoryId === selectedCategory 
-      : true;
-    
-    return matchesSearchTerm && matchesCategory;
-  });
-
   // Verificar si un producto está en el carrito
   const isProductInCart = (productId) => {
     return cartItems.some(item => item.id === productId);
   };
-
-  // Calcula el total de items en el carrito
-  const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <Router>
@@ -147,8 +189,9 @@ function App() {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center mb-4 justify-center">
+                  <div className="flex flex-row md:flex-row items-center mb-4 justify-center gap-2">
                     <BusinessHours />
+                    <ServiceLocations />
                   </div>
                   <CategoryList 
                     categories={categories} 
@@ -166,7 +209,10 @@ function App() {
               )}
               <CartButton onClick={() => setIsCartOpen(true)} itemCount={totalItems} />
               <WhatsAppButton cartItems={cartItems} />
-              {/*<AdminLink />*/}
+              {/*<AdminLink />
+              <BulkUploadButton />
+              <AdminStoreButton />
+              <AdminProductButton />*/}
               {isCartOpen && (
                 <CartModal
                   cartItems={cartItems}
@@ -180,6 +226,8 @@ function App() {
           } />
           <Route path="/upload-products" element={<UploadProducts />} />
           <Route path="/bulk-upload" element={<BulkUpload />} />
+          <Route path="/admin-stores" element={<StoreManagement />} />
+          <Route path="/admin-products" element={<ProductManagement />} />
         </Routes>
       </div>
     </Router>

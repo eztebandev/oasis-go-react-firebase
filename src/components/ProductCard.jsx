@@ -10,7 +10,7 @@ function ProductCard({ product, onAddToCart, onRemoveFromCart, isInCart }) {
   };
 
   return (
-    <div className={`flex flex-col justify-around bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300
+    <div className={`flex flex-col justify-between pb-2 pt-2 bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300
       ${isInCart ? 'ring-2 ring-green-500 shadow-lg' : 'hover:shadow-lg'}`}>
       <div className="relative pb-2/3 h-24 mt-2">
         <img 
