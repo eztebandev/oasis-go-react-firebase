@@ -74,13 +74,13 @@ function CartModal({ cartItems, onClose, onIncrease, onDecrease, onSendWhatsApp 
           <div className="border-t p-4">
             <div className="flex justify-between items-center mb-1">
               <span className="text-gray-600">Subtotal ({totalItems} items)</span>
-              <span className="font-semibold">${subtotal.toFixed(2)}</span>
+              <span className="font-semibold">s/. {subtotal.toFixed(2)}</span>
             </div>
             
             <div className="border-t pt-2 mt-2 mb-4">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-bold text-gray-800">Total</span>
-                <span className="text-xl font-bold text-blue-600">${subtotal.toFixed(2)}</span>
+                <span className="text-xl font-bold text-blue-600">s/. {subtotal.toFixed(2)}</span>
               </div>
             </div>
             

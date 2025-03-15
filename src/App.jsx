@@ -35,12 +35,12 @@ function App() {
   // Calcular el total de items en el carrito
   const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
 
+  // Cargar datos iniciales
   useEffect(() => {
-    // Cargar tiendas y productos desde Firestore
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Primero, cargar tiendas y crear un mapa de tiendas activas
+        // Cargar tiendas
         const storesSnapshot = await getDocs(collection(db, 'stores'));
         const storesList = storesSnapshot.docs.map(doc => ({
           id: doc.id,
@@ -48,28 +48,13 @@ function App() {
         }));
         setStores(storesList);
         
-        // Crear un mapa para verificar rápidamente el estado de las tiendas
+        // Crear mapa de tiendas activas
         const storesMap = {};
         storesList.forEach(store => {
           storesMap[store.id] = store.state;
         });
         setActiveStoresMap(storesMap);
-        
-        // Luego cargar productos
-        const productsSnapshot = await getDocs(collection(db, 'products'));
-        const productsList = productsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        
-        // Filtrar productos por tiendas activas
-        const activeProducts = productsList.filter(product => 
-          product.active && storesMap[product.storeId]
-        );
-        
-        setProducts(activeProducts);
-        setFilteredProducts(activeProducts);
-        
+
         // Cargar categorías
         const categoriesSnapshot = await getDocs(collection(db, 'productsCategory'));
         const categoriesList = categoriesSnapshot.docs.map(doc => ({
@@ -77,6 +62,21 @@ function App() {
           ...doc.data()
         }));
         setCategories(categoriesList);
+        
+        // Cargar todos los productos
+        const productsSnapshot = await getDocs(collection(db, 'products'));
+        const productsList = productsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        console.log(`Loaded ${productsList.length} products from Firestore`);
+        
+        // Guardar todos los productos
+        setProducts(productsList);
+        
+        // Aplicamos el filtro inicial
+        applyFilters(productsList, storesMap, null, '');
       } catch (error) {
         console.error("Error al cargar datos:", error);
       } finally {
@@ -86,31 +86,43 @@ function App() {
 
     fetchData();
   }, []);
-
-  // Filtrar productos cuando cambie la categoría o el término de búsqueda
-  useEffect(() => {
-    let result = products;
+  
+  // Función para aplicar filtros
+  const applyFilters = (allProducts, storesMap, category, term) => {
+    console.log(`Applying filters: category=${category}, term=${term}`);
+    
+    // Comenzar con todos los productos
+    let result = allProducts;
     
     // Filtrar por tiendas activas
-    result = result.filter(product => activeStoresMap[product.storeId]);
+    result = result.filter(product => 
+      product.active && storesMap[product.storeId]
+    );
     
     // Filtrar por categoría si hay una seleccionada
-    if (selectedCategory) {
-      result = result.filter(product => product.productsCategoryId === selectedCategory);
+    if (category) {
+      result = result.filter(product => product.productsCategoryId === category);
     }
     
     // Filtrar por término de búsqueda
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
+    if (term && term.trim()) {
+      const searchLower = term.toLowerCase().trim();
       result = result.filter(product =>
-        product.name.toLowerCase().includes(term) ||
-        (product.description && product.description.toLowerCase().includes(term))
+        product.name.toLowerCase().includes(searchLower) ||
+        (product.description && product.description.toLowerCase().includes(searchLower))
       );
     }
     
+    console.log(`Filter result: ${result.length} products`);
     setFilteredProducts(result);
+  };
+  
+  // Efecto para refiltar cuando cambian los criterios
+  useEffect(() => {
+    applyFilters(products, activeStoresMap, selectedCategory, searchTerm);
   }, [products, selectedCategory, searchTerm, activeStoresMap]);
 
+  // Añadir al carrito
   const handleAddToCart = (product) => {
     const existingProduct = cartItems.find(item => item.id === product.id);
     if (existingProduct) {
@@ -122,6 +134,7 @@ function App() {
     }
   };
 
+  // Quitar del carrito
   const handleRemoveFromCart = (product) => {
     setCartItems(cartItems.filter(item => item.id !== product.id));
   };
@@ -200,7 +213,8 @@ function App() {
                   />
                   <SearchBar onSearch={setSearchTerm} />
                   <ProductList 
-                    products={filteredProducts} 
+                    products={filteredProducts}
+                    loading={loading}
                     onAddToCart={handleAddToCart} 
                     onRemoveFromCart={handleRemoveFromCart}
                     isProductInCart={isProductInCart}

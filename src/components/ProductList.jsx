@@ -1,7 +1,15 @@
 import React from 'react';
 import ProductCard from './ProductCard';
 
-function ProductList({ products, onAddToCart, onRemoveFromCart, isProductInCart }) {
+function ProductList({ products, loading, onAddToCart, onRemoveFromCart, isProductInCart }) {
+  if (loading) {
+    return (
+      <div className="col-span-full flex justify-center p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 my-6">
       {products.length > 0 ? (
