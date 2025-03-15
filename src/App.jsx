@@ -33,7 +33,7 @@ function App() {
   const [activeStoresMap, setActiveStoresMap] = useState({});
 
   // Calcular el total de items en el carrito
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
 
   useEffect(() => {
     // Cargar tiendas y productos desde Firestore
@@ -118,7 +118,7 @@ function App() {
         item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
       ));
     } else {
-      setCartItems([...cartItems, product]);
+      setCartItems([...cartItems, { ...product, quantity: 1 }]);
     }
   };
 

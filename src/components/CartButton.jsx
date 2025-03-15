@@ -1,8 +1,8 @@
 import React from 'react';
 
-function CartButton({ onClick, itemCount = 0 }) {
+function CartButton({ onClick, itemCount }) {
   return (
-    <button
+    <button 
       onClick={onClick}
       className="fixed bottom-20 right-4 p-3 bg-primary hover:bg-blue-700 text-white w-14 h-14 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center z-10"
     >
