@@ -1,6 +1,7 @@
 import React from 'react';
 
 function ProductCard({ product, onAddToCart, onRemoveFromCart, isInCart }) {
+  console.log('product', product);
   const handleProductAction = () => {
     if (isInCart) {
       onRemoveFromCart(product);

@@ -1,6 +1,7 @@
 import React from 'react';
 
 function CategoryList({ categories, selectedCategory, onSelectCategory }) {
+  console.log('categories', categories);
   return (
     <div className="mb-8">
       <h2 className="text-xl font-bold text-white mb-4">Categorías</h2>
