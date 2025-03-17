@@ -187,7 +187,7 @@ function App() {
     // Cargar productos con el nuevo filtro
     try {
       //setLoading(true);
-      await loadProducts(false, null, categorySelected);
+      await loadProducts(false, null, categorySelected, searchTerm);
     } catch (error) {
       console.error("Error al filtrar por categoría:", error);
       setError('Error al filtrar los productos');
