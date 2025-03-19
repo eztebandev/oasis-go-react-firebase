@@ -67,7 +67,7 @@ function HomePage() {
         setCategories(categoriesResponse.data);
   
         // Cargar productos iniciales
-        await loadProducts(1, false);
+        await loadProducts(1, false, selectedCategory, searchTerm);
       } catch (error) {
         console.error("Error al cargar datos iniciales:", error);
         setError('Error al cargar los datos iniciales');
@@ -77,7 +77,7 @@ function HomePage() {
     };
   
     // Modificar loadProducts para manejar la estructura correcta de la respuesta
-    const loadProducts = async (page = 1, isLoadingMore = false) => {
+    const loadProducts = async (page = 1, isLoadingMore = false, category = null, term = null) => {
       try {
         setError('');
         if (!isLoadingMore) {
@@ -91,12 +91,12 @@ function HomePage() {
           limit: pagination.limit.toString()
         });
 
-        if (selectedCategory) {
-          params.append('productsCategoryId', selectedCategory);
+        if (category) {
+          params.append('productsCategoryId', category);
         }
 
-        if (searchTerm) {
-          params.append('term', searchTerm);
+        if (term) {
+          params.append('term', term);
         }
 
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/products?${params}`);
@@ -126,19 +126,26 @@ function HomePage() {
   
     // Función para manejar la selección de categoría
     const handleCategorySelect = useCallback((categoryId) => {
+      console.log('categoryId 0', categoryId);
+      console.log('selectedCategory', selectedCategory);
+      if (categoryId === selectedCategory) {
+        categoryId = null;
+        console.log('categoryId 1', categoryId);
+      }
+      console.log('categoryId 2', categoryId);
       setSelectedCategory(categoryId);
       setPagination(prev => ({ ...prev, page: 1 }));
       setProducts([]);
-      loadProducts(1, false);
-    }, []);
+      loadProducts(1, false, categoryId, searchTerm);
+    }, [searchTerm, selectedCategory]);
   
     // Función para manejar la búsqueda
     const handleSearch = useCallback((term) => {
       setSearchTerm(term);
       setPagination(prev => ({ ...prev, page: 1 }));
       setProducts([]);
-      loadProducts(1, false);
-    }, []);
+      loadProducts(1, false, selectedCategory, term);
+    }, [selectedCategory]);
   
     // Añadir al carrito
     const handleAddToCart = (product) => {
@@ -207,7 +214,7 @@ function HomePage() {
     // Solo mantener el efecto necesario para productos
     useEffect(() => {
       if (Object.keys(activeStoresMap).length > 0) {
-        loadProducts(1, false);
+        loadProducts(1, false, selectedCategory, searchTerm);
       }
     }, [activeStoresMap]);
 
@@ -233,7 +240,7 @@ function HomePage() {
         loading={loading}
         loadingMore={loadingMore}
         hasMore={pagination.page < pagination.totalPages}
-        onLoadMore={() => loadProducts(pagination.page + 1, true)}
+        onLoadMore={() => loadProducts(pagination.page + 1, true, selectedCategory, searchTerm)}
         onAddToCart={handleAddToCart} 
         onRemoveFromCart={handleRemoveFromCart}
         isProductInCart={isProductInCart}

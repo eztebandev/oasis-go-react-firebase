@@ -16,6 +16,8 @@ function ProductManagement() {
     total: 0,
     totalPages: 0
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   // Cargar productos
   const loadProducts = useCallback(async (page = 1, isLoadingMore = false) => {
@@ -42,6 +44,15 @@ function ProductManagement() {
         limit: pagination.limit.toString()
       });
 
+      // Agregar filtros a los parámetros
+      if (selectedCategory) {
+        params.append('productsCategoryId', selectedCategory);
+      }
+
+      if (searchTerm) {
+        params.append('term', searchTerm);
+      }
+
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/products?${params}`);
       const { products: newProducts, pagination: newPagination } = response.data.data;
 
@@ -59,7 +70,7 @@ function ProductManagement() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [pagination.limit]);
+  }, [pagination.limit, selectedCategory, searchTerm]);
 
   // Cargar producto específico para editar
   const loadProduct = async (productId) => {
@@ -131,6 +142,22 @@ function ProductManagement() {
     loadProducts(pagination.page, false);
   };
 
+  // Manejar búsqueda
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setPagination(prev => ({ ...prev, page: 1 }));
+    setProducts([]);
+    loadProducts(1, false);
+  };
+
+  // Manejar selección de categoría
+  const handleCategorySelect = (categoryId) => {
+    setSelectedCategory(categoryId);
+    setPagination(prev => ({ ...prev, page: 1 }));
+    setProducts([]);
+    loadProducts(1, false);
+  };
+
   // Carga inicial
   useEffect(() => {
     loadProducts(1, false);
@@ -180,6 +207,36 @@ function ProductManagement() {
         >
           Agregar Producto
         </button>
+      </div>
+
+      {/* Filtros */}
+      <div className="mb-6 space-y-4">
+        <div className="flex gap-4">
+          {/* Búsqueda */}
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Selector de categoría */}
+          <select
+            value={selectedCategory || ''}
+            onChange={(e) => handleCategorySelect(e.target.value || null)}
+            className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Todas las categorías</option>
+            {categories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {showForm && (
