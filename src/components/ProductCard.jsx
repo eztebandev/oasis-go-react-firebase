@@ -11,7 +11,7 @@ function ProductCard({ product, onAddToCart, onRemoveFromCart, isInCart }) {
   };
 
   return (
-    <div className={`flex flex-col justify-between pb-2 pt-2 bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300
+    <div className={`flex flex-col justify-between pb-1 pt-1 bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 h-full
       ${isInCart ? 'ring-2 ring-green-500 shadow-lg' : 'hover:shadow-lg'}`}>
       <div className="relative pb-2/3 h-24 mt-2">
         <img 
@@ -20,7 +20,7 @@ function ProductCard({ product, onAddToCart, onRemoveFromCart, isInCart }) {
           className="absolute h-full w-full object-contain"
         />
       </div>
-      <div className=" flex flex-col justify-between items-center p-3">
+      <div className=" flex flex-col justify-between items-center p-2">
         <h3 className="w-full font-bold text-gray-800 mb-1 text-left">{product.name}</h3>
         {/*<p className="text-gray-600 text-sm mb-2">{product.description}</p>*/}
         <div className="flex w-full flex-row justify-between items-center">
