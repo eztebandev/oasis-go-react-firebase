@@ -24,7 +24,7 @@ function ProductCard({ product, onAddToCart, onRemoveFromCart, isInCart }) {
         <h3 className="w-full font-bold text-gray-800 mb-1 text-left">{product.name}</h3>
         {/*<p className="text-gray-600 text-sm mb-2">{product.description}</p>*/}
         <div className="flex w-full flex-row justify-between items-center">
-          <p className="text-blue-600 font-bold text-base">s/. {product.price.toFixed(2)}</p>
+          <p className="text-blue-600 font-bold text-base">s/. {parseFloat(product.price).toFixed(2)}</p>
           <button
             onClick={handleProductAction}
             className={`text-white px-2 py-2 rounded-lg transition duration-300 flex items-center
