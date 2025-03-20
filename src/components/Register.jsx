@@ -3,6 +3,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Register() {
   const [email, setEmail] = useState('');
@@ -29,15 +30,25 @@ function Register() {
       // Crear usuario en Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
+      //Registar usuario en la base de datos
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/register-user`, {
+        email: email,
+        password: password,
+        phoneNumber: phoneNumber,
+        name: storeName
+      });
+
+      console.log('register', response);
       
       // Crear documento de tienda en Firestore
-      await setDoc(doc(db, 'stores', user.uid), {
+      {/*await setDoc(doc(db, 'stores', user.uid), {
         name: storeName,
         email: email,
         phoneNumber: phoneNumber,
         state: true, // Activo por defecto
         createdAt: new Date()
-      });
+      });*/}
       
       navigate('/dashboard');
     } catch (error) {
@@ -59,7 +70,7 @@ function Register() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Registrar nueva tienda
+            Registrar nueva cuenta
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             ¿Ya tienes una cuenta?{' '}
@@ -72,7 +83,7 @@ function Register() {
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="store-name" className="sr-only">
-                Nombre de la tienda
+                Nombre de usuario
               </label>
               <input
                 id="store-name"
@@ -80,7 +91,7 @@ function Register() {
                 type="text"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-white rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Nombre de la tienda o restaurante"
+                placeholder="Nombre de usuario: @nombre_usuario"
                 value={storeName}
                 onChange={(e) => setStoreName(e.target.value)}
               />

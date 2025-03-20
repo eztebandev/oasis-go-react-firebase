@@ -39,6 +39,7 @@ function App() {
 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<Dashboard />} />
 
           {/* Ruta por defecto */}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -4,6 +4,7 @@ import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import ProductManagement from './ProductManagement';
+import axios from 'axios';
 
 function Dashboard() {
   const [store, setStore] = useState(null);
@@ -16,8 +17,23 @@ function Dashboard() {
       const unsubscribe = auth.onAuthStateChanged(async (user) => {
         if (user) {
           try {
-            const storeDoc = await getDoc(doc(db, 'stores', user.uid));
-            if (storeDoc.exists()) {
+            //const storeDoc = await getDoc(doc(db, 'stores', user.uid));
+            const params = new URLSearchParams({
+              userId: user.id,
+            });
+
+            console.log('user data', user);
+
+            if (category) {
+              params.append('productsCategoryId', category);
+            }
+
+            if (term) {
+              params.append('term', term);
+            }
+
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/products?${params}`);
+            if (true) {
               setStore({ id: user.uid, ...storeDoc.data() });
             } else {
               console.error('No se encontró la tienda');
