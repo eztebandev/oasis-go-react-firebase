@@ -219,19 +219,19 @@ function HomePage() {
       setCartItems(updatedItems);
     };
   
-    const handleSendWhatsApp = () => {
-      // Calcular subtotal
-      const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const handleSendWhatsApp = (deliveryInfo = '', totalWithDelivery = null) => {
+      const subtotal = cartItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+      const total = totalWithDelivery !== null ? totalWithDelivery : subtotal;
       
-      // Crear mensaje formateado con listado y total
       const itemsList = cartItems.map(item => 
-        `🔹 *${item.name}*\n   Cantidad: ${item.quantity} x s/. ${parseFloat(item.price).toFixed(2)} = s/. ${(parseFloat(item.price) * item.quantity).toFixed(2)}`
-      ).join('\n\n');
+        `• ${item.quantity}x ${item.name} - s/. ${(parseFloat(item.price) * item.quantity).toFixed(2)}`
+      ).join('\n');
       
-      const message = `*¡Hola! Quiero realizar el siguiente pedido:*\n\n${itemsList}\n\n` + 
-                     `💰 *RESUMEN DEL PEDIDO*\n` +
-                     `📦 Cantidad de productos: ${cartItems.reduce((total, item) => total + item.quantity, 0)}\n` +
-                     `💵 *TOTAL A PAGAR: s/. ${subtotal.toFixed(2)}*\n\n` +
+      const message = `*NUEVO PEDIDO*\n\n` +
+                     `*PRODUCTOS:*\n${itemsList}\n\n` +
+                     `💵 *SUBTOTAL: s/. ${subtotal.toFixed(2)}*\n` +
+                     `${deliveryInfo}` +
+                     `💵 *TOTAL A PAGAR: s/. ${total.toFixed(2)}*\n\n` +
                      `Espero su confirmación.`;
       
       const whatsappUrl = `https://wa.me/918647161?text=${encodeURIComponent(message)}`;
