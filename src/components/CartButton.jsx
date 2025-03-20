@@ -4,7 +4,7 @@ function CartButton({ onClick, itemCount }) {
   return (
     <button 
       onClick={onClick}
-      className="fixed bottom-20 right-4 p-3 bg-primary hover:bg-blue-700 text-white w-14 h-14 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center z-10"
+      className="fixed bottom-20 right-4 p-3 bg-primary hover:bg-blue-700 text-white w-14 h-14 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center z-10 animate-[pulseGrow_1.5s_infinite]"
     >
       {/* Ícono nuevo: shopping cart solid */}
       <svg
