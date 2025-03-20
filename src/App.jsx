@@ -37,6 +37,9 @@ function App() {
           {/* Ruta de administración de productos */}
           <Route path="/admin/products" element={<ProductManagement />} />
 
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
           {/* Ruta por defecto */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
