@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 function ProductCard({ product, onAddToCart, onRemoveFromCart, isInCart }) {
   const handleProductAction = useCallback((e) => {
@@ -31,6 +31,13 @@ function ProductCard({ product, onAddToCart, onRemoveFromCart, isInCart }) {
       </div>
       <div className=" flex flex-col justify-between items-center p-2">
         <h3 className="w-full font-bold text-gray-800 mb-1 text-left">{product.name}</h3>
+        {
+          product.productsCategoryId == 1 ? (
+            <p className="w-full text-gray-600 text-sm mb-2 text-left">{product.description}</p>
+          ) : (
+            <p></p>
+          )
+        }
         {/*<p className="text-gray-600 text-sm mb-2">{product.description}</p>*/}
         <div className="flex w-full flex-row justify-between items-center">
           <p className="text-blue-600 font-bold text-base">s/. {parseFloat(product.price).toFixed(2)}</p>
