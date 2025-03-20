@@ -1,11 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 function CartModal({ cartItems, onClose, onIncrease, onDecrease, onSendWhatsApp }) {
-  const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
-  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  // Estado para forzar actualizaciones
+  const [updateKey, setUpdateKey] = useState(0);
+  
+  // Calcular totales directamente de cartItems
+  const totalItems = cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
+  const subtotal = cartItems.reduce((total, item) => 
+    total + (parseFloat(item.price) * (item.quantity || 0)), 0);
+  
+  // Forzar actualización cuando cambian los cartItems
+  useEffect(() => {
+    console.log('CartModal: cartItems actualizados', cartItems);
+    console.log('Totales calculados:', { totalItems, subtotal });
+    setUpdateKey(prev => prev + 1);
+  }, [cartItems]);
+  
+  // Manejadores con actualización inmediata
+  const handleIncrease = (item) => {
+    console.log('CartModal: Incrementando', item);
+    onIncrease(item);
+    // Forzar actualización inmediata
+    setUpdateKey(prev => prev + 1);
+  };
+  
+  const handleDecrease = (item) => {
+    console.log('CartModal: Decrementando', item);
+    onDecrease(item);
+    // Forzar actualización inmediata
+    setUpdateKey(prev => prev + 1);
+  };
 
+  // Renderizar con key para forzar recreación completa
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+    <div key={updateKey} className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
         <div className="p-4 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">Tu Carrito</h2>
@@ -36,33 +64,30 @@ function CartModal({ cartItems, onClose, onIncrease, onDecrease, onSendWhatsApp 
           ) : (
             <ul className="divide-y">
               {cartItems.map((item) => (
-                <li key={item.id} className="py-4 flex items-center justify-between">
+                <li key={`${item.id}-${item.quantity}`} className="py-4 flex items-center justify-between">
                   <div className="flex items-center">
                     <img src={item.imageUrl} alt={item.name} className="h-16 w-16 object-cover rounded-md mr-4" />
                     <div>
                       <h3 className="text-gray-800 font-medium">{item.name}</h3>
-                      <p className="text-gray-600 text-sm">s/. {item.price.toFixed(2)}</p>
+                      <p className="text-gray-600 text-sm">s/. {parseFloat(item.price).toFixed(2)}</p>
                     </div>
                   </div>
                   <div className="flex items-center">
                     <div className="flex items-center space-x-2 mr-2">
                       <button 
-                        onClick={() => onDecrease(item)}
+                        onClick={() => handleDecrease(item)}
                         className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300"
                       >
                         -
                       </button>
                       <span className="text-gray-800 w-6 text-center">{item.quantity}</span>
                       <button 
-                        onClick={() => onIncrease(item)}
+                        onClick={() => handleIncrease(item)}
                         className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300"
                       >
                         +
                       </button>
                     </div>
-                    {/*<span className="font-semibold text-blue-600">
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </span>*/}
                   </div>
                 </li>
               ))}

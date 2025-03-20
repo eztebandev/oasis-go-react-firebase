@@ -149,36 +149,74 @@ function HomePage() {
   
     // Añadir al carrito
     const handleAddToCart = (product) => {
-      const existingProduct = cartItems.find(item => item.id === product.id);
-      if (existingProduct) {
-        setCartItems(cartItems.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        ));
-      } else {
-        setCartItems([...cartItems, { ...product, quantity: 1 }]);
-      }
+      setCartItems(prevItems => {
+        // Verificar si el producto ya está en el carrito
+        const existingItem = prevItems.find(item => item.id === product.id);
+        
+        if (existingItem) {
+          // Si ya existe, incrementar la cantidad
+          return prevItems.map(item => 
+            item.id === product.id 
+              ? { ...item, quantity: (item.quantity || 0) + 1 } 
+              : item
+          );
+        } else {
+          // Si no existe, agregarlo con cantidad 1
+          return [...prevItems, { ...product, quantity: 1 }];
+        }
+      });
     };
   
     // Quitar del carrito
     const handleRemoveFromCart = (product) => {
-      setCartItems(cartItems.filter(item => item.id !== product.id));
+      setCartItems(prevItems => 
+        prevItems.filter(item => item.id !== product.id)
+      );
     };
   
+    // Función para incrementar la cantidad
     const handleIncreaseQuantity = (product) => {
-      setCartItems(cartItems.map(item =>
-        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-      ));
+      console.log('HomePage: Incrementando cantidad para:', product);
+      
+      // Crear una copia profunda del array de cartItems
+      const updatedItems = JSON.parse(JSON.stringify(cartItems));
+      
+      // Encontrar y actualizar el item
+      const itemIndex = updatedItems.findIndex(item => item.id === product.id);
+      if (itemIndex !== -1) {
+        updatedItems[itemIndex].quantity += 1;
+        console.log(`Actualizando cantidad de ${updatedItems[itemIndex].name} a ${updatedItems[itemIndex].quantity}`);
+      }
+      
+      // Actualizar el estado con el nuevo array
+      console.log('Nuevo carrito:', updatedItems);
+      setCartItems(updatedItems);
     };
   
+    // Función para decrementar la cantidad
     const handleDecreaseQuantity = (product) => {
-      // Si la cantidad es 1 y se disminuye, eliminar el producto del carrito
-      if (product.quantity === 1) {
-        setCartItems(cartItems.filter(item => item.id !== product.id));
-      } else {
-        setCartItems(cartItems.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity - 1 } : item
-        ));
+      console.log('HomePage: Decrementando cantidad para:', product);
+      
+      // Crear una copia profunda del array de cartItems
+      const updatedItems = JSON.parse(JSON.stringify(cartItems));
+      
+      // Encontrar el item
+      const itemIndex = updatedItems.findIndex(item => item.id === product.id);
+      if (itemIndex !== -1) {
+        if (updatedItems[itemIndex].quantity <= 1) {
+          // Eliminar el producto si la cantidad es 1
+          console.log(`Eliminando ${updatedItems[itemIndex].name} del carrito`);
+          updatedItems.splice(itemIndex, 1);
+        } else {
+          // Decrementar la cantidad
+          updatedItems[itemIndex].quantity -= 1;
+          console.log(`Actualizando cantidad de ${updatedItems[itemIndex].name} a ${updatedItems[itemIndex].quantity}`);
+        }
       }
+      
+      // Actualizar el estado con el nuevo array
+      console.log('Nuevo carrito:', updatedItems);
+      setCartItems(updatedItems);
     };
   
     const handleSendWhatsApp = () => {
@@ -187,13 +225,13 @@ function HomePage() {
       
       // Crear mensaje formateado con listado y total
       const itemsList = cartItems.map(item => 
-        `🔹 *${item.name}*\n   Cantidad: ${item.quantity} x $${item.price.toFixed(2)} = $${(item.price * item.quantity).toFixed(2)}`
+        `🔹 *${item.name}*\n   Cantidad: ${item.quantity} x s/. ${parseFloat(item.price).toFixed(2)} = s/. ${(parseFloat(item.price) * item.quantity).toFixed(2)}`
       ).join('\n\n');
       
       const message = `*¡Hola! Quiero realizar el siguiente pedido:*\n\n${itemsList}\n\n` + 
                      `💰 *RESUMEN DEL PEDIDO*\n` +
                      `📦 Cantidad de productos: ${cartItems.reduce((total, item) => total + item.quantity, 0)}\n` +
-                     `💵 *TOTAL A PAGAR: $${subtotal.toFixed(2)}*\n\n` +
+                     `💵 *TOTAL A PAGAR: s/. ${subtotal.toFixed(2)}*\n\n` +
                      `Espero su confirmación.`;
       
       const whatsappUrl = `https://wa.me/918647161?text=${encodeURIComponent(message)}`;

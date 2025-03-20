@@ -4,11 +4,11 @@ function WhatsAppButton({ cartItems }) {
 
     const handleWhatsAppAction = () => {
         // Calcular subtotal
-        const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+        const subtotal = cartItems.reduce((total, item) => total + (parseFloat(item.price) * item.quantity), 0);
 
         // Crear mensaje formateado con listado y total
         const itemsList = cartItems.map(item => 
-            `🔹 *${item.name}*\n   Cantidad: ${item.quantity} x $${item.price.toFixed(2)} = $${(item.price * item.quantity).toFixed(2)}`
+            `🔹 *${item.name}*\n   Cantidad: ${item.quantity} x $${parseFloat(item.price).toFixed(2)} = $${(parseFloat(item.price) * item.quantity).toFixed(2)}`
         ).join('\n\n');
 
         let message = '';
