@@ -17,7 +17,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
               <div className="flex-grow z-10">
                 <h3 className="text-md font-semibold text-gray-800">{category.name}</h3>
               </div>
-              <div className="w-30 h-30 ml-2">
+              <div className="w-24 h-24 ml-2">
                 <img 
                   src={category.imageUrl} 
                   alt={category.name} 
