@@ -32,7 +32,7 @@ function ProductCard({ product, onAddToCart, onRemoveFromCart, isInCart }) {
       <div className=" flex flex-col justify-between items-center p-2">
         <h3 className="w-full font-bold text-gray-800 mb-1 text-left">{product.name}</h3>
         {
-          product.productsCategoryId == 1 || product.productsCategoryId == 3 ? (
+          product.productsCategoryId != 2 ? (
             <p className="w-full text-gray-600 text-sm mb-2 text-left">{product.description}</p>
           ) : (
             <p></p>
