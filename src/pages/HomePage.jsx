@@ -64,7 +64,8 @@ function HomePage() {
   
         // Cargar categorías desde la API
         const categoriesResponse = await axios.get(`${import.meta.env.VITE_API_URL}/categories`);
-        setCategories(categoriesResponse.data);
+        const sortedCategories = categoriesResponse.data.sort((a, b) => a.order - b.order);
+        setCategories(sortedCategories);
   
         // Cargar productos iniciales
         await loadProducts(1, false, selectedCategory, searchTerm);
