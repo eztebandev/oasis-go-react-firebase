@@ -18,7 +18,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
     if (isMobile && categories.length > 2) {
       autoPlayIntervalRef.current = setInterval(() => {
         setCurrentIndex(prev => (prev + 2) % (Math.ceil(categories.length / 2) * 2));
-      }, 3000);
+      }, 100000);
     }
     return () => {
       if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
@@ -56,7 +56,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
             >
               <div className="flex items-center p-4 h-24">
                 <div className="flex-grow">
-                  <h3 className="text-sm font-semibold text-gray-800">{category.name}</h3>
+                  <h3 className="text-sm font-semibold text-gray-800 text-center">{category.name}</h3>
                 </div>
                 <div className="w-16 h-16 flex-shrink-0">
                   <img 
