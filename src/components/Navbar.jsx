@@ -11,6 +11,7 @@ function Navbar() {
           </svg>
           <h1 className="text-2xl font-bold">Oasis Go</h1>
         </div>
+        <BusinessHours />
       </div>
     </nav>
   );

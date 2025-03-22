@@ -38,15 +38,15 @@ function BusinessHours() {
   }, []);
 
   return (
-    <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-sm">
-      <div className="flex flex-col">
-        <span className="text-sm font-medium text-gray-600">
+    <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-lg px-2 py-2 shadow-sm">
+      <div className="flex w-full flex-row space-between">
+        {/*<span className="text-sm font-medium text-gray-600">
           Horario de hoy:
         </span>
         <span className="text-sm font-medium text-gray-600">
           {currentSchedule}
-        </span>
-        <span className={`text-xs font-medium ${isOpen ? 'text-green-600' : 'text-red-600'}`}>
+        </span>*/}
+        <span className={`text-xs font-medium mr-2 ${isOpen ? 'text-green-600' : 'text-red-600'}`}>
           {isOpen ? '● Abierto ahora' : '● Cerrado'}
         </span>
         <svg 

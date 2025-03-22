@@ -262,7 +262,7 @@ function HomePage() {
   return (
     <div className="flex-grow p-4 max-w-4xl mx-auto">
       <div className="flex flex-row md:flex-row items-center mb-4 justify-center gap-2">
-        <BusinessHours />
+        {/* <BusinessHours /> */}
         <ServiceLocations />
       </div>
       <CategoryList 
