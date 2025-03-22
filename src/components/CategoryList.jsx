@@ -18,7 +18,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
     if (isMobile && categories.length > 2) {
       autoPlayIntervalRef.current = setInterval(() => {
         setCurrentIndex(prev => (prev + 2) % (Math.ceil(categories.length / 2) * 2));
-      }, 100000);
+      }, 3000);
     }
     return () => {
       if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
