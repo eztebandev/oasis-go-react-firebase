@@ -39,7 +39,7 @@ function BusinessHours() {
 
   return (
     <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-lg px-2 py-2 shadow-sm">
-      <div className="flex w-full flex-row space-between">
+      <div className="flex w-full flex-row space-between items-center">
         {/*<span className="text-sm font-medium text-gray-600">
           Horario de hoy:
         </span>
