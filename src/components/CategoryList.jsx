@@ -54,7 +54,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
                 ${selectedCategory === category.id ? 'ring-2 ring-blue-500' : ''}`}
               onClick={() => onSelectCategory(category.id)}
             >
-              <div className="flex items-center p-2 h-24">
+              <div className="flex items-center p-4 h-24">
                 <div className="flex-grow">
                   <h3 className="text-sm font-semibold text-gray-800">{category.name}</h3>
                 </div>
