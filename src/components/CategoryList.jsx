@@ -44,7 +44,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
             setCurrentIndex(newIndex);
           }, 300); // Esperar a que termine la animación
         }
-      }, 3000);
+      }, 5000);
     }
     return () => {
       if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
