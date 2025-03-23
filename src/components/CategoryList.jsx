@@ -44,7 +44,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
             setCurrentIndex(newIndex);
           }, 300); // Esperar a que termine la animación
         }
-      }, 5000);
+      }, 10000);
     }
     return () => {
       if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
@@ -72,7 +72,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
             left: 0,
             behavior: 'smooth'
           });
-        }, 300);
+        }, 5000);
       }
     }
   };
