@@ -3,10 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 function CategoryList({ categories, selectedCategory, onSelectCategory }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const scrollContainerRef = useRef(null);
   const autoPlayIntervalRef = useRef(null);
-  const touchStartXRef = useRef(0);
-  const touchEndXRef = useRef(0);
-  const containerRef = useRef(null);
   
   // Detectar si es dispositivo móvil
   useEffect(() => {
@@ -16,103 +14,104 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
   
-  // Autoavance en móvil
+  // Autoavance en móvil con comportamiento circular
   useEffect(() => {
     if (isMobile && categories.length > 2) {
       autoPlayIntervalRef.current = setInterval(() => {
-        setCurrentIndex(prev => (prev + 2) % (Math.ceil(categories.length / 2) * 2));
-      }, 5000);
+        if (scrollContainerRef.current) {
+          const container = scrollContainerRef.current;
+          const maxScrollLeft = container.scrollWidth - container.clientWidth;
+          
+          // Si estamos cerca del final, volver al inicio
+          if (container.scrollLeft >= maxScrollLeft - 50) {
+            container.scrollTo({
+              left: 0,
+              behavior: 'smooth'
+            });
+          } else {
+            // De lo contrario, avanzar normalmente
+            container.scrollBy({
+              left: 160, // Ancho aproximado de un elemento
+              behavior: 'smooth'
+            });
+          }
+          
+          // Actualizar el índice actual basado en la posición de desplazamiento
+          setTimeout(() => {
+            const scrollLeft = container.scrollLeft;
+            const itemWidth = 160; // Ancho aproximado de un elemento con padding
+            const newIndex = Math.round(scrollLeft / itemWidth) % categories.length;
+            setCurrentIndex(newIndex);
+          }, 300); // Esperar a que termine la animación
+        }
+      }, 3000);
     }
     return () => {
       if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
     };
   }, [isMobile, categories.length]);
   
-  // Navegación
-  const nextSlide = () => {
-    setCurrentIndex(prev => (prev + 2) % (Math.ceil(categories.length / 2) * 2));
-  };
-  
-  const prevSlide = () => {
-    setCurrentIndex(prev => (prev - 2 + categories.length) % (Math.ceil(categories.length / 2) * 2));
-  };
-  
-  // Manejadores de eventos táctiles para deslizamiento
-  const handleTouchStart = (e) => {
-    // Detener autoavance temporalmente cuando el usuario interactúa
-    if (autoPlayIntervalRef.current) {
-      clearInterval(autoPlayIntervalRef.current);
-    }
-    
-    // Guardar posición inicial del toque
-    touchStartXRef.current = e.touches[0].clientX;
-    touchEndXRef.current = e.touches[0].clientX;
-  };
-  
-  const handleTouchMove = (e) => {
-    // Actualizar posición final del toque
-    touchEndXRef.current = e.touches[0].clientX;
-  };
-  
-  const handleTouchEnd = () => {
-    // Calcular la distancia del deslizamiento
-    const touchDiff = touchStartXRef.current - touchEndXRef.current;
-    
-    // Si el deslizamiento fue significativo (más de 50px)
-    if (Math.abs(touchDiff) > 50) {
-      if (touchDiff > 0) {
-        // Deslizamiento hacia la izquierda -> siguiente slide
-        nextSlide();
-      } else {
-        // Deslizamiento hacia la derecha -> slide anterior
-        prevSlide();
+  // Manejar el evento de desplazamiento para actualizar el índice actual
+  // y detectar cuando llega al final para volver al inicio
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const scrollLeft = container.scrollLeft;
+      const maxScrollLeft = container.scrollWidth - container.clientWidth;
+      const itemWidth = 160; // Ancho aproximado de un elemento con padding
+      
+      // Actualizar el índice actual
+      const newIndex = Math.round(scrollLeft / itemWidth) % categories.length;
+      setCurrentIndex(newIndex);
+      
+      // Si el usuario ha llegado al final manualmente, volver al inicio
+      if (scrollLeft >= maxScrollLeft) {
+        // Pequeño retraso para que el usuario vea que ha llegado al final
+        setTimeout(() => {
+          container.scrollTo({
+            left: 0,
+            behavior: 'smooth'
+          });
+        }, 300);
       }
-    }
-    
-    // Reiniciar autoavance después de la interacción
-    if (isMobile && categories.length > 2) {
-      autoPlayIntervalRef.current = setInterval(() => {
-        setCurrentIndex(prev => (prev + 2) % (Math.ceil(categories.length / 2) * 2));
-      }, 3000);
     }
   };
   
   // Renderizado móvil
   const renderMobileView = () => {
-    // Mostrar solo 2 categorías a la vez
-    const visibleCategories = categories.slice(currentIndex, currentIndex + 2);
-    // Si no hay suficientes categorías, añadir desde el principio
-    if (visibleCategories.length < 2 && categories.length > 0) {
-      visibleCategories.push(...categories.slice(0, 2 - visibleCategories.length));
-    }
-    
     return (
-      <div 
-        className="relative px-2 flex items-center"
-        ref={containerRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Solo mostramos 2 categorías a la vez */}
-        <div className="grid grid-cols-2 gap-2">
-          {visibleCategories.map((category) => (
+      <div className="w-full">
+        {/* Contenedor de desplazamiento nativo */}
+        <div 
+          ref={scrollContainerRef}
+          className="flex w-full overflow-x-auto pb-4 hide-scrollbar snap-x snap-mandatory"
+          style={{ 
+            scrollbarWidth: 'none', // Firefox
+            msOverflowStyle: 'none', // IE/Edge
+          }}
+          onScroll={handleScroll}
+        >
+          {/* Mostrar todas las categorías en una fila horizontal */}
+          {categories.map((category, index) => (
             <div 
               key={category.id} 
-              className={`bg-gradient-to-br from-white to-gray-100 rounded-lg shadow cursor-pointer
-                ${selectedCategory === category.id ? 'ring-2 ring-blue-500' : ''}`}
+              className="flex-none w-32 px-2 snap-start"
               onClick={() => onSelectCategory(category.id)}
             >
-              <div className="flex items-center p-2 h-24">
-                <div className="flex-grow">
-                  <h3 className="text-sm font-semibold text-gray-800">{category.name}</h3>
-                </div>
-                <div className="w-16 h-16 flex-shrink-0">
-                  <img 
-                    src={category.imageUrl} 
-                    alt={category.name} 
-                    className="w-full h-full object-contain"
-                  />
+              <div className={`bg-gradient-to-br from-white to-gray-100 rounded-lg shadow cursor-pointer h-24
+                ${selectedCategory === category.id ? 'ring-2 ring-blue-500' : ''}`}
+              >
+                <div className="flex flex-col items-center p-2 h-full">
+                  <div className="w-full text-center mb-1">
+                    <h3 className="text-xs font-semibold text-gray-800 truncate">{category.name}</h3>
+                  </div>
+                  <div className="w-12 h-12 flex-shrink-0">
+                    <img 
+                      src={category.imageUrl} 
+                      alt={category.name} 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -120,28 +119,52 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
         </div>
         
         {/* Flechas indicadoras de deslizamiento */}
-        <div className="absolute right-0 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-md z-10 animate-pulse">
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-md z-10 animate-pulse">
           <svg className="w-5 h-5 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
         
-        {/* Indicadores
-        <div className="flex justify-center mt-3">
-          {Array.from({ length: Math.ceil(categories.length / 2) }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentIndex(i * 2)}
-              className={`h-2 w-8 mx-1 rounded-full ${Math.floor(currentIndex / 2) === i ? 'bg-blue-500' : 'bg-gray-300'}`}
-            />
-          ))}
-        </div> */}
+        {/* Indicadores 
+        <div className="flex justify-center mt-2">
+          <div className="flex space-x-1 max-w-full overflow-x-auto py-1 px-2">
+            {categories.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollTo({
+                      left: i * 160,
+                      behavior: 'smooth'
+                    });
+                  }
+                  setCurrentIndex(i);
+                }}
+                className={`h-2 w-2 flex-shrink-0 rounded-full ${currentIndex === i ? 'bg-blue-500' : 'bg-gray-300'}`}
+              />
+            ))}
+          </div>
+        </div>*/}
       </div>
     );
   };
   
+  // Estilos CSS para ocultar la barra de desplazamiento en WebKit (Chrome, Safari)
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+  
   return (
-    <div className="mb-8 w-full">
+    <div className="mb-8 w-full relative">
       <h2 className="text-xl font-bold text-white mb-4">Categorías</h2>
       
       {isMobile ? renderMobileView() : (
