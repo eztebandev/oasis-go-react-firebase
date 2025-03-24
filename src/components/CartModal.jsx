@@ -195,8 +195,9 @@ function CartModal({ cartItems, onClose, onIncrease, onDecrease, onSendWhatsApp 
     const currentHour = new Date().getHours();
 
     // Si es entre 11pm (23) y 7am (7), el precio base es 5
-    const isNightTime = currentHour >= 23 || currentHour < 7;
-    const baseCost = isNightTime ? 5 : 4;
+    const isNightTime = currentHour >= 23 || currentHour < 1;
+    const isNightTimeAfter = currentHour >= 1 || currentHour < 7;
+    const baseCost = isNightTime ? 5 : isNightTimeAfter ? 6 : 4;
 
     //console.log(`Hora actual: ${currentHour}h`);
     //console.log(`¿Horario nocturno?`, isNightTime);
