@@ -190,11 +190,21 @@ function CartModal({ cartItems, onClose, onIncrease, onDecrease, onSendWhatsApp 
   
   // Calcular costo de delivery basado en la distancia
   const calculateDeliveryCost = (distanceInKm) => {
-    // Base: 3 soles + 1 sol por cada km adicional
-    console.log('Distancia de Kms:', distanceInKm < 3);
-    const baseCost = 3;
+
+    // Obtener la hora actual
+    const currentHour = new Date().getHours();
+
+    // Si es entre 11pm (23) y 7am (7), el precio base es 5
+    const isNightTime = currentHour >= 23 || currentHour < 7;
+    const baseCost = isNightTime ? 5 : 4;
+
+    //console.log(`Hora actual: ${currentHour}h`);
+    //console.log(`¿Horario nocturno?`, isNightTime);
+    //console.log('Distancia de Kms:', distanceInKm);
+
     const additionalKm = distanceInKm >= 2 ? Math.max(0, Math.ceil(distanceInKm - 1)) : 0;
     const cost = baseCost + additionalKm;
+
     return cost;
   };
   

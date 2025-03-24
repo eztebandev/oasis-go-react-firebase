@@ -42,7 +42,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
             const itemWidth = 160; // Ancho aproximado de un elemento con padding
             const newIndex = Math.round(scrollLeft / itemWidth) % categories.length;
             setCurrentIndex(newIndex);
-          }, 300); // Esperar a que termine la animación
+          }, 1000); // Esperar a que termine la animación
         }
       }, 10000);
     }
@@ -72,7 +72,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
             left: 0,
             behavior: 'smooth'
           });
-        }, 5000);
+        }, 10000);
       }
     }
   };
@@ -80,11 +80,11 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
   // Renderizado móvil
   const renderMobileView = () => {
     return (
-      <div className="w-full">
+      <div className="w-full flex justify-center items-center">
         {/* Contenedor de desplazamiento nativo */}
         <div 
           ref={scrollContainerRef}
-          className="flex w-full overflow-x-auto pb-4 hide-scrollbar snap-x snap-mandatory"
+          className="flex w-full overflow-x-auto pb-2 pt-2 hide-scrollbar snap-x snap-mandatory"
           style={{ 
             scrollbarWidth: 'none', // Firefox
             msOverflowStyle: 'none', // IE/Edge
@@ -101,7 +101,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
               <div className={`bg-gradient-to-br from-white to-gray-100 rounded-lg shadow cursor-pointer h-24
                 ${selectedCategory === category.id ? 'ring-2 ring-blue-500' : ''}`}
               >
-                <div className="flex flex-col items-center p-2 h-full">
+                <div className="flex flex-col items-center p-2 h-full justify-center">
                   <div className="w-full text-center mb-1">
                     <h3 className="text-xs font-semibold text-gray-800 truncate">{category.name}</h3>
                   </div>
@@ -119,7 +119,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
         </div>
         
         {/* Flechas indicadoras de deslizamiento */}
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-md z-10 animate-pulse">
+        <div className="absolute right-4 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-md z-10 animate-pulse">
           <svg className="w-5 h-5 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
@@ -164,7 +164,7 @@ function CategoryList({ categories, selectedCategory, onSelectCategory }) {
   }, []);
   
   return (
-    <div className="mb-8 w-full relative">
+    <div className="mb-4 w-full relative">
       <h2 className="text-xl font-bold text-white mb-4">Categorías</h2>
       
       {isMobile ? renderMobileView() : (

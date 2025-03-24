@@ -31,7 +31,7 @@ function SearchBar({ onSearch, initialValue = '' }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4">
+    <form onSubmit={handleSubmit} className="mb-6">
       <div className="relative">
         <input
           type="text"
