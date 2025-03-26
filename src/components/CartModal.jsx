@@ -39,7 +39,7 @@ function CartModal({ cartItems, onClose, onIncrease, onDecrease, onSendWhatsApp 
   // Calcular totales directamente de cartItems
   const totalItems = cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
   const subtotal = cartItems.reduce((total, item) => 
-    total + (parseFloat(item.price) * (item.quantity || 0)), 0);
+    total + (parseFloat(item.PriceAndTariff) * (item.quantity || 0)), 0);
   const total = subtotal + deliveryCost;
   
   // Forzar actualización cuando cambian los cartItems
@@ -466,7 +466,7 @@ function CartModal({ cartItems, onClose, onIncrease, onDecrease, onSendWhatsApp 
                     <div className="ml-4 flex-1">
                       <div className="flex justify-between">
                         <h3 className="font-medium text-gray-800">{item.name}</h3>
-                        <span className="font-medium text-gray-800">S/. {parseFloat(item.price).toFixed(2)}</span>
+                        <span className="font-medium text-gray-800">S/. {parseFloat(item.PriceAndTariff).toFixed(2)}</span>
                       </div>
                       <p className="text-gray-500 text-sm mt-1">{item.description}</p>
                       <div className="flex justify-between items-center mt-2">
@@ -486,7 +486,7 @@ function CartModal({ cartItems, onClose, onIncrease, onDecrease, onSendWhatsApp 
                           </button>
                         </div>
                         <span className="font-medium text-gray-800">
-                          S/. {(parseFloat(item.price) * item.quantity).toFixed(2)}
+                          S/. {(parseFloat(item.PriceAndTariff) * item.quantity).toFixed(2)}
                         </span>
                       </div>
                     </div>

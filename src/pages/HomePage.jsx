@@ -296,11 +296,11 @@ function HomePage() {
     };
   
     const handleSendWhatsApp = (deliveryInfo = '', totalWithDelivery = null) => {
-      const subtotal = cartItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+      const subtotal = cartItems.reduce((sum, item) => sum + (parseFloat(item.PriceAndTariff) * item.quantity), 0);
       const total = totalWithDelivery !== null ? totalWithDelivery : subtotal;
       
       const itemsList = cartItems.map(item => 
-        `• ${item.quantity}x ${item.name} - s/. ${(parseFloat(item.price) * item.quantity).toFixed(2)}`
+        `• ${item.quantity}x ${item.name} - s/. ${(parseFloat(item.PriceAndTariff) * item.quantity).toFixed(2)}`
       ).join('\n');
       
       const message = selectedService.name === 'Delivery' ? `*NUEVO PEDIDO*\n\n` +
