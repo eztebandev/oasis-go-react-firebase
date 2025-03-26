@@ -173,7 +173,7 @@ function HomePage() {
           // Si se borró completamente, cargar productos iniciales
           setPagination(prev => ({ ...prev, page: 1 }));
           setProducts([]);
-          loadProducts(1, false, selectedCategory, '');
+          loadProducts(1, false, selectedCategory ? selectedCategory.id : null, '');
         }
         return;
       }
