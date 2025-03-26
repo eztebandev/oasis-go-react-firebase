@@ -302,12 +302,12 @@ function HomePage() {
         `• ${item.quantity}x ${item.name} - s/. ${(parseFloat(item.price) * item.quantity).toFixed(2)}`
       ).join('\n');
       
-      const message = `*NUEVO PEDIDO*\n\n` +
+      const message = selectedService.name === 'Delivery' ? `*NUEVO PEDIDO*\n\n` +
                      `*PRODUCTOS:*\n${itemsList}\n\n` +
                      `💵 *SUBTOTAL: s/. ${subtotal.toFixed(2)}*\n` +
                      `${deliveryInfo}` +
                      `💵 *TOTAL A PAGAR: s/. ${total.toFixed(2)}*\n\n` +
-                     `Espero su confirmación.`;
+                     `Espero su confirmación.` : `${deliveryInfo}\n` + `Espero su confirmación.`;
       
       const whatsappUrl = `https://wa.me/918647161?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
@@ -394,9 +394,9 @@ function HomePage() {
           <p className="text-sm text-blue-800">
             <span className="font-medium">Disponibilidad:</span> {selectedService.disponibility || '24/7'}
           </p>
-          <p className="text-sm text-blue-800 mt-1">
+          {/*<p className="text-sm text-blue-800 mt-1">
             <span className="font-medium">Tarifa base:</span> S/. {parseFloat(selectedService.tax_base).toFixed(2)}
-          </p>
+          </p>*/}
         </div>
         
         <div className="mt-6">
