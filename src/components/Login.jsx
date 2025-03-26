@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -10,13 +11,25 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if(userData){
+      navigate('/dashboard');
+    }
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/login-user`, {
+        uid: userCredential.user.uid
+      });
+      localStorage.setItem('user', JSON.stringify(response.data));
+      console.log('response', response);
       navigate('/dashboard');
     } catch (error) {
       console.error('Error al iniciar sesión:', error);

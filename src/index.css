@@ -78,3 +78,24 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
 }
+
+@layer utilities {
+  /* Ocultar scrollbar para Chrome, Safari y Opera */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Ocultar scrollbar para IE, Edge y Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE y Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  /* Limitar texto a 2 líneas */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

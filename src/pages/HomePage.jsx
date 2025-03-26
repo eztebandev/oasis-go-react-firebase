@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import ProductList from '../components/ProductList';
 import CartButton from '../components/CartButton';
@@ -8,6 +8,9 @@ import CategoryList from '../components/CategoryList';
 import SearchBar from '../components/SearchBar';
 import BusinessHours from '../components/BusinessHours';
 import ServiceLocations from '../components/ServiceLocations';
+import ServiceSelector from '../components/ServiceSelector';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import ErrorAlert from '../components/common/ErrorAlert';
 
 function HomePage() {
     const [products, setProducts] = useState([]);
@@ -31,9 +34,40 @@ function HomePage() {
       total: 0,
       totalPages: 0
     });
+    const [selectedService, setSelectedService] = useState(null);
+    
+    // Referencias para mantener la posición de desplazamiento
+    const productsRef = useRef(null);
+
+    //Tarifa de servicio
+    const SERVICE_TAX = selectedService ? parseFloat(selectedService.tax_base) / 100 : 0.10;
   
     // Calcular el total de items en el carrito
     const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  
+    // Manejar la selección de servicio
+    const handleServiceSelect = useCallback((service) => {
+      console.log('Servicio seleccionado:', service);
+      setSelectedService(service);
+      
+      // Reiniciar estados relacionados con productos y categorías
+      setSelectedCategory(null);
+      setSearchTerm('');
+      setPagination(prev => ({ ...prev, page: 1 }));
+      setProducts([]);
+      setFilteredProducts([]);
+      
+      // Si el servicio es delivery, cargar categorías y productos
+      if (service.name.toLowerCase() === 'delivery') {
+        loadInitialData();
+      } else {
+        // Para otros servicios, limpiar categorías y productos
+        setCategories([]);
+        setProducts([]);
+        setFilteredProducts([]);
+        setLoading(false);
+      }
+    }, []);
   
     // Separar la carga inicial de datos
     const loadInitialData = async () => {
@@ -101,6 +135,10 @@ function HomePage() {
         }
 
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/products?${params}`);
+        response.data.data.products.map(product => {
+          product.priceTax = parseFloat(product.price) + (parseFloat(product.price) * SERVICE_TAX);
+          product.PriceAndTariff = (Math.ceil(product.priceTax * 10) / 10).toFixed(2);
+        });
         const { products: newProducts } = response.data.data;
         const { pagination: newPagination } = response.data.data;
 
@@ -125,28 +163,64 @@ function HomePage() {
       }
     };
   
-    // Función para manejar la selección de categoría
-    const handleCategorySelect = useCallback((categoryId) => {
-      console.log('categoryId 0', categoryId);
-      console.log('selectedCategory', selectedCategory);
-      if (categoryId === selectedCategory) {
-        categoryId = null;
-        console.log('categoryId 1', categoryId);
-      }
-      console.log('categoryId 2', categoryId);
-      setSelectedCategory(categoryId);
-      setPagination(prev => ({ ...prev, page: 1 }));
-      setProducts([]);
-      loadProducts(1, false, categoryId, searchTerm);
-    }, [searchTerm, selectedCategory]);
-  
     // Función para manejar la búsqueda
     const handleSearch = useCallback((term) => {
       setSearchTerm(term);
+      
+      // Si el término está vacío o es muy corto, no realizar búsqueda
+      if (!term || term.length < 1) {
+        if (term === '') {
+          // Si se borró completamente, cargar productos iniciales
+          setPagination(prev => ({ ...prev, page: 1 }));
+          setProducts([]);
+          loadProducts(1, false, selectedCategory, '');
+        }
+        return;
+      }
+      
       setPagination(prev => ({ ...prev, page: 1 }));
       setProducts([]);
-      loadProducts(1, false, selectedCategory, term);
-    }, [selectedCategory]);
+      
+      // Guardar la posición actual de desplazamiento
+      const currentScrollPosition = window.scrollY;
+      
+      loadProducts(1, false, selectedCategory, term).then(() => {
+        // Después de cargar los productos, mantener la posición de desplazamiento
+        // o desplazarse hasta la sección de productos si es una nueva búsqueda
+        if (term && productsRef.current) {
+          productsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          window.scrollTo(0, currentScrollPosition);
+        }
+      });
+    }, [selectedCategory, loadProducts]);
+  
+    // Función para manejar la selección de categoría
+    const handleCategorySelect = useCallback((category) => {
+      if (category === null) {
+        setSelectedCategory(null);
+      } else if (category.id === selectedCategory?.id) {
+        setSelectedCategory(null);
+      } else {
+        setSelectedCategory(category);
+      }
+
+      setPagination(prev => ({ ...prev, page: 1 }));
+      setProducts([]);
+      
+      // Guardar la posición actual de desplazamiento
+      const currentScrollPosition = window.scrollY;
+      
+      loadProducts(1, false, category.id, searchTerm).then(() => {
+        // Después de cargar los productos, mantener la posición de desplazamiento
+        // o desplazarse hasta la sección de productos
+        if (productsRef.current) {
+          productsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          window.scrollTo(0, currentScrollPosition);
+        }
+      });
+    }, [searchTerm, selectedCategory, loadProducts]);
   
     // Añadir al carrito
     const handleAddToCart = (product) => {
@@ -244,20 +318,101 @@ function HomePage() {
       return cartItems.some(item => item.id === productId);
     };
   
-    // Efecto inicial solo para la primera carga
+    // Efecto inicial para cargar servicios
     useEffect(() => {
-      loadInitialData();
+      // No cargar datos iniciales automáticamente, esperar selección de servicio
+      setLoading(false);
     }, []);
   
     // Remover el efecto que recargaba todo al cambiar activeStoresMap
     // Solo mantener el efecto necesario para productos
     useEffect(() => {
-      if (Object.keys(activeStoresMap).length > 0) {
+      if (Object.keys(activeStoresMap).length > 0 && selectedService?.name.toLowerCase() === 'delivery') {
         loadProducts(1, false, selectedCategory, searchTerm);
       }
-    }, [activeStoresMap]);
+    }, [activeStoresMap, selectedService]);
 
-  // ... resto de la lógica del HomePage (loadProducts, handleSearch, etc.) ...
+  // Renderizar contenido específico según el servicio seleccionado
+  const renderServiceContent = () => {
+    if (!selectedService) {
+      return (
+        <div className="text-center p-8">
+          <p className="text-lg text-gray-600">Por favor, selecciona un servicio para continuar.</p>
+        </div>
+      );
+    }
+
+    // Si es delivery, mostrar categorías y productos
+    if (selectedService.name.toLowerCase() === 'delivery') {
+      return (
+        <>
+          <CategoryList 
+            categories={categories} 
+            selectedCategory={selectedCategory}
+            onSelectCategory={handleCategorySelect}
+          />
+          <SearchBar 
+            onSearch={handleSearch} 
+            initialValue={searchTerm}
+          />
+          <div ref={productsRef}>
+            <ProductList 
+              products={products}
+              loading={loading}
+              loadingMore={loadingMore}
+              hasMore={pagination.page < pagination.totalPages}
+              onLoadMore={() => loadProducts(pagination.page + 1, true, selectedCategory, searchTerm)}
+              onAddToCart={handleAddToCart} 
+              onRemoveFromCart={handleRemoveFromCart}
+              isProductInCart={isProductInCart}
+            />
+          </div>
+        </>
+      );
+    }
+
+    // Para otros servicios, mostrar información específica
+    return (
+      <div className="bg-white shadow-md rounded-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">{selectedService.name}</h2>
+        
+        {selectedService.imageUrl && (
+          <div className="mb-4 flex justify-center">
+            <img 
+              src={selectedService.imageUrl} 
+              alt={selectedService.name} 
+              className="h-40 w-auto object-contain rounded-md"
+            />
+          </div>
+        )}
+        
+        <div className="prose max-w-none">
+          <p className="text-gray-600">{selectedService.description || 'No hay descripción disponible para este servicio.'}</p>
+        </div>
+        
+        <div className="mt-4 p-3 bg-blue-50 rounded-md">
+          <p className="text-sm text-blue-800">
+            <span className="font-medium">Disponibilidad:</span> {selectedService.disponibility || '24/7'}
+          </p>
+          <p className="text-sm text-blue-800 mt-1">
+            <span className="font-medium">Tarifa base:</span> S/. {parseFloat(selectedService.tax_base).toFixed(2)}
+          </p>
+        </div>
+        
+        <div className="mt-6">
+          <button
+            onClick={() => handleSendWhatsApp(`*SERVICIO SOLICITADO:* ${selectedService.name}\n`, parseFloat(selectedService.tax_base))}
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md flex items-center justify-center"
+          >
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            Solicitar por WhatsApp
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="flex-grow p-2 max-w-full mx-auto">
@@ -265,40 +420,42 @@ function HomePage() {
         {/* <BusinessHours /> */}
         <ServiceLocations />
       </div>
-      <CategoryList 
-        categories={categories} 
-        selectedCategory={selectedCategory}
-        onSelectCategory={handleCategorySelect}
+      
+      <ServiceSelector 
+        onSelectService={handleServiceSelect} 
+        selectedService={selectedService}
       />
-      <SearchBar 
-        onSearch={handleSearch} 
-        initialValue={searchTerm}
-      />
-      <ProductList 
-        products={products}
-        loading={loading}
-        loadingMore={loadingMore}
-        hasMore={pagination.page < pagination.totalPages}
-        onLoadMore={() => loadProducts(pagination.page + 1, true, selectedCategory, searchTerm)}
-        onAddToCart={handleAddToCart} 
-        onRemoveFromCart={handleRemoveFromCart}
-        isProductInCart={isProductInCart}
-      />
+      
       {error && (
-        <div className="mt-4 p-4 text-red-700 bg-red-100 rounded-md">
-          {error}
-        </div>
-      )}
-      <CartButton onClick={() => setIsCartOpen(true)} itemCount={totalItems} />
-      <WhatsAppButton cartItems={cartItems} />
-      {isCartOpen && (
-        <CartModal
-          cartItems={cartItems}
-          onClose={() => setIsCartOpen(false)}
-          onIncrease={handleIncreaseQuantity}
-          onDecrease={handleDecreaseQuantity}
-          onSendWhatsApp={handleSendWhatsApp}
+        <ErrorAlert 
+          message={error} 
+          onClose={() => setError('')}
         />
+      )}
+      
+      {loading ? (
+        <div className="flex justify-center p-8">
+          <LoadingSpinner size="lg" />
+        </div>
+      ) : (
+        renderServiceContent()
+      )}
+      
+      {selectedService?.name.toLowerCase() === 'delivery' && (
+        <>
+          <CartButton onClick={() => setIsCartOpen(true)} itemCount={totalItems} />
+          <WhatsAppButton cartItems={cartItems} />
+          {isCartOpen && (
+            <CartModal
+              cartItems={cartItems}
+              onClose={() => setIsCartOpen(false)}
+              onIncrease={handleIncreaseQuantity}
+              onDecrease={handleDecreaseQuantity}
+              onSendWhatsApp={handleSendWhatsApp}
+              serviceTax={SERVICE_TAX}
+            />
+          )}
+        </>
       )}
     </div>
   );

@@ -10,7 +10,7 @@ function Register() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [storeName, setStoreName] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -29,6 +29,7 @@ function Register() {
     try {
       // Crear usuario en Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('userCredential firebase', userCredential);
       const user = userCredential.user;
 
       //Registar usuario en la base de datos
@@ -36,7 +37,8 @@ function Register() {
         email: email,
         password: password,
         phoneNumber: phoneNumber,
-        name: storeName
+        name: name,
+        uid: user.uid
       });
 
       console.log('register', response);
@@ -50,7 +52,7 @@ function Register() {
         createdAt: new Date()
       });*/}
       
-      navigate('/dashboard');
+      navigate('/login');
     } catch (error) {
       console.error('Error al registrar:', error);
       if (error.code === 'auth/email-already-in-use') {
@@ -87,13 +89,13 @@ function Register() {
               </label>
               <input
                 id="store-name"
-                name="storeName"
+                name="name"
                 type="text"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-white rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Nombre de usuario: @nombre_usuario"
-                value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
             <div>
