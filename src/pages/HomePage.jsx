@@ -125,7 +125,7 @@ function HomePage() {
           page: page.toString(),
           limit: pagination.limit.toString()
         });
-
+        console.log('category endpoint', category);
         if (category) {
           params.append('productsCategoryId', category);
         }
@@ -184,7 +184,7 @@ function HomePage() {
       // Guardar la posición actual de desplazamiento
       const currentScrollPosition = window.scrollY;
       
-      loadProducts(1, false, selectedCategory, term).then(() => {
+      loadProducts(1, false, selectedCategory ? selectedCategory.id : null, term).then(() => {
         // Después de cargar los productos, mantener la posición de desplazamiento
         // o desplazarse hasta la sección de productos si es una nueva búsqueda
         if (term && productsRef.current) {
@@ -197,6 +197,7 @@ function HomePage() {
   
     // Función para manejar la selección de categoría
     const handleCategorySelect = useCallback((category) => {
+      console.log('category select', category);
       if (category === null) {
         setSelectedCategory(null);
       } else if (category.id === selectedCategory?.id) {
@@ -211,7 +212,7 @@ function HomePage() {
       // Guardar la posición actual de desplazamiento
       const currentScrollPosition = window.scrollY;
       
-      loadProducts(1, false, category.id, searchTerm).then(() => {
+      loadProducts(1, false, category ? category.id : null, searchTerm).then(() => {
         // Después de cargar los productos, mantener la posición de desplazamiento
         // o desplazarse hasta la sección de productos
         if (productsRef.current) {
@@ -328,7 +329,7 @@ function HomePage() {
     // Solo mantener el efecto necesario para productos
     useEffect(() => {
       if (Object.keys(activeStoresMap).length > 0 && selectedService?.name.toLowerCase() === 'delivery') {
-        loadProducts(1, false, selectedCategory, searchTerm);
+        loadProducts(1, false, selectedCategory ? selectedCategory.id : null, searchTerm);
       }
     }, [activeStoresMap, selectedService]);
 
@@ -361,7 +362,7 @@ function HomePage() {
               loading={loading}
               loadingMore={loadingMore}
               hasMore={pagination.page < pagination.totalPages}
-              onLoadMore={() => loadProducts(pagination.page + 1, true, selectedCategory, searchTerm)}
+              onLoadMore={() => loadProducts(pagination.page + 1, true, selectedCategory ? selectedCategory.id : null, searchTerm)}
               onAddToCart={handleAddToCart} 
               onRemoveFromCart={handleRemoveFromCart}
               isProductInCart={isProductInCart}
